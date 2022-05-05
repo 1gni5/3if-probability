@@ -78,22 +78,34 @@ StandardMinimal <- function(k, seed)
 Frequency <- function(x, nb)
 {
   pValues = c()
+  binSeq = c()
   
   # For every element of x
   for (i in 1:length(x))
   {
     # Create a binary representation
-    binSeq <- binary(x[i])
+    bin <- binary(x[i])
     
-    # Convert 0 -> -1
-    binSeq <- (binSeq * 2) - 1
+    # Add to the sequence
+    binSeq <- append(binSeq, bin)
     
-    # We're only interested in the first nb bits
-    binSeq <- binSeq[1:nb]
-    
-    # Compute pValue
-    sObs <- abs(sum(binSeq)) / sqrt(nb)
-    pValues <- append(pValues, 2 * (1 - pnorm(sObs)))
+    # If the sequence is long enougth
+    if (length(binSeq) >= nb)
+    {
+      # Convert 0 -> -1
+      binSeq <- (binSeq * 2) - 1
+      
+      # We're only interested in the first nb bits
+      binSeq <- binSeq[1:nb]
+      
+      # Compute pValue
+      sObs <- abs(sum(binSeq)) / sqrt(nb)
+      pValue <- 2 * (1 - pnorm(sObs))
+      pValues <- append(pValues, pValue)
+      
+      # Reset current sequence
+      binSeq <- c()
+    }
   }
   return(pValues)
 }
