@@ -1,0 +1,67 @@
+---
+title: "TP de Probabilités"
+author: "Irène Gannaz"
+date: "2017-2018"
+output: pdf_document
+---
+
+
+
+Ceci est un exemple de document fait avec Rmarkdown. Je vous conseille de l'utiliser pour votre compte-rendu de TP. Pour exécuter un .Rmd, utiliser le bouton 'Knit' de Rstudio.
+
+
+#Partie 1.
+
+##Question 1
+
+On peut mettre du code qui sera exécuté mais qui n'aparaitra pas dans le compte rendu.
+
+```{r setup, include=FALSE}
+library(randtoolbox)
+source('generateurs.R')
+
+sVN <- 2504
+sMT <- 2504
+Nsimu <- 1000
+Nrepet <- 20
+```
+
+Ensuite on peut aussi mettre du code qui apparaît dans le compte-rendu. 
+```{r}
+vn <- VonNeumann(Nsimu,Nrepet,sVN)
+mt <- MersenneTwister(Nsimu,Nrepet,sMT)
+
+par(mfrow=c(1,2))
+hist(mt[,1],xlab='',main='Mersenne Twister')
+hist(vn[,1],xlab='',main='Von Neumann')
+
+(bit_mt <- binary(mt[1,1]))
+```
+
+
+Comme vous pouvez le voir, les retours numériques de R ainsi que les sorties graphiques sont intégrés dans le compte-rendu.
+
+##Quelques plus pour la mise en forme
+
+Il est possible de mettre des mots *en italique* ou **en gras**.
+On peut également faire des listes :
+
+* Item 1 
+
+* Item 2 
+
+    + sub-item 1 
+
+    + sub-item 2 
+
+Et des tableaux :
+
+Permière colonne | Deuxième colonne 
+------------- | ------------- 
+a    | x        
+b        | y        
+
+Ou mettre des formules : $Aire = \pi\,r^{2}$.
+
+###Remarque
+Rmarkdown fait gagner du temps pour les compte-rendus et permet d'intégrer plus facilement des parties de code quand on le souhaite. Toutefois, je vous conseille d'avoir un fichier .R dans lequel vous ne mettez que du code et d'intégrer celui-ci dans le .Rmd lorsque vous obtenez des résultats. Faites les commentaires au fur et à mesure et n'attendez pas la dernière heure !
