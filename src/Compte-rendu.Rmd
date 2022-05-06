@@ -1,0 +1,136 @@
+---
+title: "Compte rendu"
+author: "Jules Ducange, Fécilie Chaudron"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(randtoolbox)
+source('generateurs.R')
+source('tests.R')
+```
+
+# Partie 1
+
+## Question 1
+
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+
+# Distribution de RANDU()
+randu <- RANDU(100, 37)
+hist(randu, main = "RANDU")
+
+# Distribution de StandardMinimal()
+standard <- StandardMinimal(100, 37)
+hist(standard, main = "StandardMinimal")
+
+# Distribution de VonNeumann()
+neumann <- VonNeumann(100, 1, 37)
+hist(neumann, main = "VonNeumann")
+
+# Distribution de MersenneTwister()
+twister <- MersenneTwister(100, 1, 37)
+hist(twister, main = "MersenneTwister")
+```
+
+
+On observe sur l'histogramme de VonNeumann un répartition concentré sur des valeurs comprises entre 0 et 1000.
+L'algorithme semble donc inefficace pour générer des valeurs pseudo-aléatoire de qualité (non prévisible).
+On observe des répartition semblable pour les générateurs: RANDU, StandardMinimal et MersenneTwister. Chacun possède
+une fréqucence et une répartition de valeur du même ordre de grandeur, fréquence comprise entre 0 et 15, intervalle de valeurs de l'ordre 10^9. Cependant à cette échelle la répartition n'est pas parfaitement uniforme, on peux s'approcher
+du résultat attendu (selon les lois de probabilité), en augmentant significativement le nombre de valeurs générées (e.g. 1 000 000 de valeurs).
+
+```{r, echo=FALSE}
+par(mfrow=c(1,3))
+
+# Distribution de RANDU()
+u <- RANDU(1000000, 37)
+hist(u, main = "RANDU")
+
+# Distribution de StandardMinimal()
+u <- StandardMinimal(1000000, 37)
+hist(u, main = "StandardMinimal")
+
+# Distribution de MersenneTwister()
+u <- MersenneTwister(1000000, 1, 37)
+hist(u, main = "MersenneTwister ")
+```
+
+## Question 2
+
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+n <- 100
+
+# Distribution de RANDU()
+plot(randu[1:(n-1)], randu[2:n])
+
+# Distribution de StandardMinimal()
+plot(standard[1:(n-1)], standard[2:n])
+
+# Distribution de VonNeumann()
+plot(neumann[1:(n-1)], neumann[2:n])
+
+# Distribution de MersenneTwister()
+plot(twister[1:(n-1)], twister[2:n])
+```
+
+On constate qu'un générateur est efficace si étant donné une valeur il est impossible d'anticiper la prochaine 
+valeur générée. Les graphique ci-dessus représente la valeur généré en fonction de la valeur précédente, si le générateur est efficace on doit observer un nuage de point dispersé sur tout l'espace de valeurs. 
+C'est le cas pour MercenneTwister, RANDU et StandardMinimal, en revanche on observe une superposition importante proche de 0 pour VonNeumann.
+
+## Exercice 2
+
+```{r}
+par(mfrow=c(1,2))
+
+set.seed(198676)
+seeds <- sample.int(2^30, 100)
+
+pValuesRANDU <- c()
+pValuesStandardMinimal <- c()
+pValuesVonNeumann <- c()
+pValuesMersenneTwister <- c()
+
+
+for (i in 1:length(seeds))
+{
+  pValuesRANDU <- append(pValuesRANDU , Frequency(RANDU(150, seeds[i]), 31))
+  pValuesStandardMinimal <- append(pValuesStandardMinimal, Frequency(StandardMinimal(150, seeds[i]), 31))
+  pValuesVonNeumann <- append(pValuesVonNeumann, Frequency(VonNeumann(150, 1, seeds[i]), 13))
+  pValuesMersenneTwister <- append(pValuesMersenneTwister, Frequency(MersenneTwister(150, 1, seeds[i]), 32))
+}
+
+hist(pValuesRANDU)
+hist(pValuesStandardMinimal)
+hist(pValuesVonNeumann, xlim = c(0,1))
+hist(pValuesMersenneTwister)
+```
+
+```{r}
+#par(mfrow=c(1,2))
+
+set.seed(198676)
+seeds <- sample.int(2^30, 100)
+
+pValuesRANDU <- c()
+pValuesStandardMinimal <- c()
+pValuesVonNeumann <- c()
+pValuesMersenneTwister <- c()
+
+
+for (i in 1:length(seeds))
+{
+  pValuesRANDU <- append(pValuesRANDU , Runs(RANDU(150, seeds[i]), 31))
+  pValuesStandardMinimal <- append(pValuesStandardMinimal, Runs(StandardMinimal(150, seeds[i]), 31))
+  pValuesVonNeumann <- append(pValuesVonNeumann, Runs(VonNeumann(150, 1, seeds[i]), 13))
+  pValuesMersenneTwister <- append(pValuesMersenneTwister, Runs(MersenneTwister(150, 1, seeds[i]), 32))
+}
+
+hist(pValuesRANDU)
+hist(pValuesStandardMinimal)
+hist(pValuesVonNeumann, xlim = c(0,1))
+hist(pValuesMersenneTwister)
+```

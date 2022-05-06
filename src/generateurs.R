@@ -45,7 +45,7 @@ RANDU <- function(k, seed)
   m <- 2^31
   
   # Create first element based on seed.
-  x <- c((a * seed + b) %% m)
+  x <- c( (a * seed + b) %% m )
   
   # Iterate over every state
   for (i in 2:k)
@@ -74,39 +74,5 @@ StandardMinimal <- function(k, seed)
   return(x)
 }
 
-# --- Question 2 ---
-Frequency <- function(x, nb)
-{
-  pValues = c()
-  binSeq = c()
-  
-  # For every element of x
-  for (i in 1:length(x))
-  {
-    # Create a binary representation
-    bin <- binary(x[i])
-    
-    # Add to the sequence
-    binSeq <- append(binSeq, bin)
-    
-    # If the sequence is long enougth
-    if (length(binSeq) >= nb)
-    {
-      # Convert 0 -> -1
-      binSeq <- (binSeq * 2) - 1
-      
-      # We're only interested in the first nb bits
-      binSeq <- binSeq[1:nb]
-      
-      # Compute pValue
-      sObs <- abs(sum(binSeq)) / sqrt(nb)
-      pValue <- 2 * (1 - pnorm(sObs))
-      pValues <- append(pValues, pValue)
-      
-      # Reset current sequence
-      binSeq <- c()
-    }
-  }
-  return(pValues)
-}
+
 
