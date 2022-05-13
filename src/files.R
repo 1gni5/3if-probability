@@ -1,10 +1,10 @@
+# --- Question 6 ---
 FileMM1 <- function(lambda, mu, D)
 {
   incomingClients <- c()
   outgoingClients <- c()
   
   processedClients <- 0
-  clients <- c()
   
   # Calcul l'intervalle entre l'arrivées des 2 derniers clients
   clientInterval <- rexp(1, lambda)
@@ -21,11 +21,17 @@ FileMM1 <- function(lambda, mu, D)
     outgoingClients, 
     incomingClients[processedClients] + serverInterval
   )
+  
+  # Réduit l'analyse à la période D
+  while (
+    min(incomingClients[processedClients], 
+        outgoingClients[processedClients]) < D
+  ){
     
-  while (min(incomingClients[processedClients], outgoingClients[processedClients]) < D)
-  {
+    # Calcul l'intervale d'entré
     clientInterval <- rexp(1, lambda)
     
+    # Ajoute la date d'entrée
     incomingClients <- append (
       incomingClients, 
       incomingClients[processedClients] + clientInterval
@@ -35,85 +41,87 @@ FileMM1 <- function(lambda, mu, D)
     
     serverInterval <- rexp(1, mu)
     
+    # Ajoute la date de sortie
     outgoingClients <- append(
       outgoingClients, 
-      max(
+      max ( # Gère le cas d'un serveur occupé ou libre
         incomingClients[processedClients], # Serveur libre
         outgoingClients[processedClients - 1] # Serveur occupé
       ) + serverInterval
     )
-    
   }
   
-  # Retire les derniers éléments (en dehors de l'intervale d'observation)
+  # Retire les éléments en dehors de la période d'observation
   incomingClients <- incomingClients[incomingClients < D]
   outgoingClients <- outgoingClients[outgoingClients < D]
   
-  return(list(departs=outgoingClients, arrivees=incomingClients))
+  return(list(
+    departs = outgoingClients, 
+    arrivees = incomingClients)
+  )
 }
 
-systemEvolution <- function(results)
+# --- Question 7 ---
+systemEvolution <- function(incoming, outgoing)
 {
-  # Date de chaque événement (entrée ou sortie)
-  timeTable <- sort(c(results$arrivees, results$departs))
-  
   # Nombre de clients dans le système à l'instant t
-  noClients <- 0
+  numberOfClient <- 0
   
   # Curseurs arrivées et départs
   cursorIn <- 1
   cursorOut <- 1
   
   state <- list(
-    t <- c(),
-    nb <- c()
+    time <- c(),
+    capacity <- c()
   )
   
-  while (
-    cursorIn < length(results$arrivees)
-    && cursorOut < length(results$departs)
-  )
-  {
-    if (results$arrivees[cursorIn] <= results$departs[cursorOut])
+  # Tant que les 2 pointeurs sont dans les limites des vecteurs
+  while ( 
+    cursorIn < length(incoming)
+    && cursorOut < length(outgoing)
+  ){
+    # Récupère la date la plus proche
+    date <- min(results$arrivees[cursorIn], results$departs[cursorOut])
+    
+    # Date d'arrivé
+    if (date == results$arrivees[cursorIn])
     {
-      t <- results$arrivees[cursorIn]
-      noClients <- noClients + 1
+      numberOfClient <- numberOfClient + 1
       cursorIn <- cursorIn + 1
-    }
-    else
-    {
-      t <- results$departs[cursorOut]
-      noClients <- noClients - 1
+    }else{
+      numberOfClient <- numberOfClient - 1
       cursorOut <- cursorOut + 1
     }
 
-    state$t <- append(state$t, t)
-    state$nb <- append(state$nb, noClients)
+    # Met à jour l'historique de l'état du système
+    state$time <- append(state$time, date)
+    state$capacity <- append(state$capacity, numberOfClient)
   }
 
+  # Ajoute les valeurs d'arrivées manquantes 
   for (cursor in cursorIn:length(results$arrivees))
   {
-    t <- results$arrivees[cursor]
-    noClients <- noClients + 1
-    state$t <- append(state$t, t)
-    state$nb <- append(state$nb, noClients)
+    date <- results$arrivees[cursor]
+    numberOfClient <- numberOfClient + 1
+    
+    # Met à jour l'historique de l'état du système
+    state$time <- append(state$time, date)
+    state$capacity <- append(state$capacity, numberOfClient)
   }
 
+  # Ajoute les valeurs de sorties manquantes
   for (cursor in cursorOut:length(results$departs))
   {
-    t <- results$departs[cursor]
-    noClients <- noClients - 1
-    state$t <- append(state$t, t)
-    state$nb <- append(state$nb, noClients)
+    date <- results$departs[cursor]
+    numberOfClient <- numberOfClient - 1
+    
+    # Met à jour l'historique de l'état du système
+    state$time <- append(state$time, date)
+    state$capacity <- append(state$capacity, numberOfClient)
   }
   
-  
   return(state)
-}
-
-erlang <- function(lambda, mu)
-{
-  return(lambda / mu)
 }
 
 turnAroundTime <- function(inDate, outDate)
@@ -125,3 +133,4 @@ turnAroundTime <- function(inDate, outDate)
   }
   return(timePassed)
 }
+

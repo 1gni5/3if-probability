@@ -1,10 +1,12 @@
 ---
-title: "Compte rendu"
+title: "Modélisation et Outils Mathématiques, TP génération de nombres aléatoires et probabilités"
 author: "Jules Ducange, Fécilie Chaudron et Erwan Soulier"
 date: "`r Sys.Date()`"
 output:
   pdf_document: default
-  html_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -12,331 +14,429 @@ library(randtoolbox)
 source('generateurs.R')
 source('tests.R')
 source('files.R')
+source('utils.R')
 ```
 
-# Partie 1
+# Tests de générateurs pseudo-aléatoires
 
-## Question 1
+## Test Visuel
+
+### Question 2.1
 
 ```{r, echo=FALSE}
-par(mfrow=c(1,2))
+# Paramètre l'affichage
+par(mfrow=c(2,2))
+
+seed <- 319481
+numberOfValues <- 100
 
 # Distribution de RANDU()
-randu <- RANDU(100, 37)
-hist(randu, main = "RANDU")
+randu <- RANDU(numberOfValues, seed)
+hist(randu, main = "RANDU", xlab = "Values")
 
 # Distribution de StandardMinimal()
-standard <- StandardMinimal(100, 37)
-hist(standard, main = "StandardMinimal")
+standard <- StandardMinimal(numberOfValues, seed)
+hist(standard, main = "Standard Minimal", xlab = "Values")
 
 # Distribution de VonNeumann()
-neumann <- VonNeumann(100, 1, 37)
-hist(neumann, main = "VonNeumann")
+neumann <- VonNeumann(numberOfValues, 1, seed)
+hist(neumann, main = "Von Neumann", xlab = "Values")
 
 # Distribution de MersenneTwister()
-twister <- MersenneTwister(100, 1, 37)
-hist(twister, main = "MersenneTwister")
+twister <- MersenneTwister(numberOfValues, 1, seed)
+hist(twister, main = "Mersenne Twister", xlab = "Values")
 ```
 
-
-On observe sur l'histogramme de VonNeumann un répartition concentré sur des valeurs comprises entre 0 et 1000.
-L'algorithme semble donc inefficace pour générer des valeurs pseudo-aléatoire de qualité (non prévisible).
-On observe des répartition semblable pour les générateurs: RANDU, StandardMinimal et MersenneTwister. Chacun possède
-une fréqucence et une répartition de valeur du même ordre de grandeur, fréquence comprise entre 0 et 15, intervalle de valeurs de l'ordre 10^9. Cependant à cette échelle la répartition n'est pas parfaitement uniforme, on peux s'approcher
-du résultat attendu (selon les lois de probabilité), en augmentant significativement le nombre de valeurs générées (e.g. 1 000 000 de valeurs).
+On observe sur l'histogramme de l'algorithme de VonNeumann une répartition 
+concentrée sur les valeurs comprises entre 0 et 1000. L'algorithme semble donc
+inefficace pour générer des valeurs pseudo-aléatoires de qualité 
+(non prévisible).
+Les histogrammes des algorithmes de RANDU, Standard Minimal et Mersenne Twister
+sont tous similaires et présentes des représentations relativement homogènes.
+Pour approcher de la répartition théorique utilisée en probabilité en augmentant 
+significativement le nombre de valeurs générées (eg: plus d'un million de valeurs).
 
 ```{r, echo=FALSE}
+# Paramètre l'affichage
 par(mfrow=c(1,3))
 
+seed <- 319481
+numberOfValues <- 1000000
+
 # Distribution de RANDU()
-u <- RANDU(1000000, 37)
-hist(u, main = "RANDU")
+u <- RANDU(numberOfValues, seed)
+hist(u, main = "RANDU", xlab = "Values")
 
 # Distribution de StandardMinimal()
-u <- StandardMinimal(1000000, 37)
-hist(u, main = "StandardMinimal")
+u <- StandardMinimal(numberOfValues, seed)
+hist(u, main = "Standard Minimal", xlab = "Values")
 
 # Distribution de MersenneTwister()
-u <- MersenneTwister(1000000, 1, 37)
-hist(u, main = "MersenneTwister ")
+u <- MersenneTwister(numberOfValues, 1, seed)
+hist(u, main = "Mersenne Twister", xlab = "Values")
+
+# Supprime le vecteur
+remove(u)
 ```
 
-## Question 2
+### Question 2.2
 
 ```{r, echo=FALSE}
-par(mfrow=c(1,2))
-n <- 100
+# Paramètre l'affichage
+par(mfrow=c(2,2))
 
-# Distribution de RANDU()
-plot(randu[1:(n-1)], randu[2:n])
+numberOfValues <- 100
 
-# Distribution de StandardMinimal()
-plot(standard[1:(n-1)], standard[2:n])
+# Relation entre les valeurs générée par RANDU
+plot(
+  randu[1:(numberOfValues-1)], 
+  randu[2:numberOfValues],
+  xlab = "Valeur précédente",
+  ylab = "Valeur générée"
+)
 
-# Distribution de VonNeumann()
-plot(neumann[1:(n-1)], neumann[2:n])
+# Relation entre les valeurs générée par StandardMinimal
+plot(
+  standard[1:(numberOfValues-1)], 
+  standard[2:numberOfValues],
+  xlab = "Valeur précédente",
+  ylab = "Valeur générée"
+)
 
-# Distribution de MersenneTwister()
-plot(twister[1:(n-1)], twister[2:n])
+# Relation entre les valeurs générée par VonNeumann
+plot(
+  neumann[1:(numberOfValues-1)],
+  neumann[2:numberOfValues],
+  xlab = "Valeur précédente",
+  ylab = "Valeur générée"
+)
+
+# Relation entre les valeurs générée par MersenneTwister
+plot(
+  twister[1:(numberOfValues-1)],
+  twister[2:numberOfValues],
+  xlab = "Valeur précédente",
+  ylab = "Valeur générée"
+)
 ```
 
-On constate qu'un générateur est efficace si étant donné une valeur il est impossible d'anticiper la prochaine 
-valeur générée. Les graphique ci-dessus représente la valeur généré en fonction de la valeur précédente, si le générateur est efficace on doit observer un nuage de point dispersé sur tout l'espace de valeurs. 
-C'est le cas pour MercenneTwister, RANDU et StandardMinimal, en revanche on observe une superposition importante proche de 0 pour VonNeumann.
+Un générateur aléatoire est efficace si, étant donné une valeur il est
+impossible d'anticiper la prochaine valeur générée. Les graphiques ci-dessus
+représente la valeur générée en fonction de la valeur précédente sous la forme
+d'un nuage de points. Pour un générateur efficace on doit observer un nuage de
+point homogène, puisqu'il n'existe aucune relation entre les valeurs
+générées. C'est effectivement ce que l'on remarque pour `MercenneTwister`,
+`RANDU` et `StandardMinimal`, en revanche on observe une forte superposition
+pour les valeurs proches de zéro sur le graphique de `VonNeumann`.
 
-## Question 3
+## Test de fréquence monobit
 
-```{r}
-par(mfrow=c(1,2))
+### Question 3
 
+```{r, echo=FALSE}
+# Génére 100 seeds
 set.seed(198676)
 seeds <- sample.int(2^30, 100)
 
-pValuesRANDU <- c()
-pValuesStandardMinimal <- c()
-pValuesVonNeumann <- c()
-pValuesMersenneTwister <- c()
+numberOfValues <- 250
 
+pValues <- list (
+  RANDU = c(),
+  StandardMinimal = c(),
+  VonNeumann = c(),
+  MersenneTwister = c()
+)
 
-for (i in 1:length(seeds))
-{
-  pValuesRANDU <- append(pValuesRANDU , Frequency(RANDU(150, seeds[i]), 31))
-  pValuesStandardMinimal <- append(pValuesStandardMinimal, Frequency(StandardMinimal(150, seeds[i]), 31))
-  pValuesVonNeumann <- append(pValuesVonNeumann, Frequency(VonNeumann(150, 1, seeds[i]), 13))
-  pValuesMersenneTwister <- append(pValuesMersenneTwister, Frequency(MersenneTwister(150, 1, seeds[i]), 32))
+# Génére 100 pValues pour chaque algorithme
+for (seed in seeds) {
+  
+  # RANDU
+  pValues$RANDU <- append(
+    pValues$RANDU, 
+    Frequency(RANDU(numberOfValues, seed), 31)
+  )
+  
+  # Standard Minimal
+  pValues$StandardMinimal <- append(
+    pValues$StandardMinimal,
+    Frequency(StandardMinimal(numberOfValues, seed), 31)
+  )
+  
+  # Von Neumann
+  pValues$VonNeumann <- append(
+    pValues$VonNeumann,
+    Frequency(VonNeumann(numberOfValues, 1, seed), 13)
+  )
+  
+  # Mersenne Twister
+  pValues$MersenneTwister <- append(
+    pValues$MersenneTwister, 
+    Frequency(MersenneTwister(numberOfValues, 1, seed), 32)
+  )
 }
 
-hist(pValuesRANDU)
-hist(pValuesStandardMinimal)
-hist(pValuesVonNeumann, xlim = c(0,1))
-hist(pValuesMersenneTwister)
+# Calculs les valeurs en dessous de 1%
+below1Percent <- belowThreshold(pValues)
 
-errorsRANDU = c()
-for (x in 1:length(pValuesRANDU))
-{
-  if (pValuesRANDU[x] <= 0.01)
-  {
-    errorsRANDU <- append(errorsRANDU, pValuesRANDU[x])
-  }
-}
+# Affiche le nombre de valeurs générées en dessous de 1%
+sprintf(
+  "Nombre d'erreurs RANDU: %s", 
+  length(below1Percent$RANDU)
+)
 
-errorsStandardMinimal = c()
-for (x in 1:length(pValuesStandardMinimal))
-{
-  if (pValuesStandardMinimal[x] <= 0.01)
-  {
-    errorsStandardMinimal <- append(errorsStandardMinimal, pValuesStandardMinimal[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs StandardMinimal: %s",
+  length(below1Percent$StandardMinimal)
+)
 
-errorsVonNeumann = c()
-for (x in 1:length(pValuesVonNeumann))
-{
-  if (pValuesVonNeumann[x] <= 0.01)
-  {
-    errorsVonNeumann <- append(errorsVonNeumann, pValuesVonNeumann[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs VonNeumann: %s",
+  length(below1Percent$VonNeumann)
+)
 
-errorsMersenneTwister = c()
-for (x in 1:length(pValuesMersenneTwister))
-{
-  if (pValuesMersenneTwister[x] <= 0.01)
-  {
-    errorsMersenneTwister <- append(errorsMersenneTwister, pValuesMersenneTwister[x])
-  }
-}
-
-print("Erreurs RANDU")
-print(length(errorsRANDU))
-
-print("Erreurs StandardMinimal")
-print(length(errorsStandardMinimal))
-
-print("Erreurs VonNeumann")
-print(length(errorsVonNeumann))
-
-print("Erreurs MersenneTwister")
-print(length(errorsMersenneTwister))
+sprintf(
+  "Nombre d'erreurs MersenneTwister: %s",
+  length(below1Percent$MersenneTwister)
+)
 ```
-On rejette les algorithmes de RANDU et VonNeumann qui ne passent pas le test des 1%.
 
-```{r}
-#par(mfrow=c(1,2))
+On remarque que les algorithmes de `RANDU` et `Von Neumann` produisent beaucoup
+de pValeurs en dessous du seuil des $1%$, on peut donc les rejeter, ils ne sont pas des
+générateurs aléatoires de qualité.
 
+```{r, echo=FALSE}
+# Génére 100 seeds
 set.seed(198676)
 seeds <- sample.int(2^30, 100)
 
-pValuesRANDU <- c()
-pValuesStandardMinimal <- c()
-pValuesVonNeumann <- c()
-pValuesMersenneTwister <- c()
+numberOfValues <- 250
 
+pValues <- list (
+  RANDU = c(),
+  StandardMinimal = c(),
+  VonNeumann = c(),
+  MersenneTwister = c()
+)
 
-for (i in 1:length(seeds))
-{
-  pValuesRANDU <- append(pValuesRANDU , Runs(RANDU(150, seeds[i]), 31))
-  pValuesStandardMinimal <- append(pValuesStandardMinimal, Runs(StandardMinimal(150, seeds[i]), 31))
-  pValuesVonNeumann <- append(pValuesVonNeumann, Runs(VonNeumann(150, 1, seeds[i]), 13))
-  pValuesMersenneTwister <- append(pValuesMersenneTwister, Runs(MersenneTwister(150, 1, seeds[i]), 32))
+# Génére 100 pValues pour chaque algorithme
+for (seed in seeds) {
+
+  # RANDU
+  pValues$RANDU <- append (
+    pValues$RANDU, 
+    Runs(RANDU(numberOfValues, seed), 31)
+  )
+  
+  # Standard Minimal
+  pValues$StandardMinimal <- append (
+    pValues$StandardMinimal,
+    Runs(StandardMinimal(numberOfValues, seed), 31)
+  )
+  
+  # Von Neumann
+  pValues$VonNeumann <- append (
+    pValues$VonNeumann,
+    Runs(VonNeumann(numberOfValues, 1, seed), 13)
+  )
+  
+  # Mersenne Twister
+  pValues$MersenneTwister <- append (
+    pValues$MersenneTwister,
+    Runs(MersenneTwister(numberOfValues, 1, seed), 32)
+  )
 }
 
-errorsRANDU = c()
-for (x in 1:length(pValuesRANDU))
-{
-  if (pValuesRANDU[x] <= 0.01)
-  {
-    errorsRANDU <- append(errorsRANDU, pValuesRANDU[x])
-  }
-}
+# Calculs les valeurs en dessous de 1%
+below1Percent <- belowThreshold(pValues)
 
-errorsStandardMinimal = c()
-for (x in 1:length(pValuesStandardMinimal))
-{
-  if (pValuesStandardMinimal[x] <= 0.01)
-  {
-    errorsStandardMinimal <- append(errorsStandardMinimal, pValuesStandardMinimal[x])
-  }
-}
+# Affiche le nombre de valeurs générées en dessous de 1%
+sprintf(
+  "Nombre d'erreurs RANDU: %s", 
+  length(below1Percent$RANDU)
+)
 
-errorsVonNeumann = c()
-for (x in 1:length(pValuesVonNeumann))
-{
-  if (pValuesVonNeumann[x] <= 0.01)
-  {
-    errorsVonNeumann <- append(errorsVonNeumann, pValuesVonNeumann[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs StandardMinimal: %s",
+  length(below1Percent$StandardMinimal)
+)
 
-errorsMersenneTwister = c()
-for (x in 1:length(pValuesMersenneTwister))
-{
-  if (pValuesMersenneTwister[x] <= 0.01)
-  {
-    errorsMersenneTwister <- append(errorsMersenneTwister, pValuesMersenneTwister[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs VonNeumann: %s",
+  length(below1Percent$VonNeumann)
+)
 
-sprintf("Nombre d'erreurs RANDU: %s", length(errorsRANDU))
-sprintf("Nombre d'erreurs StandardMinimal: %s", length(errorsStandardMinimal))
-sprintf("Nombre d'erreurs VonNeumann: %s", length(errorsVonNeumann))
-sprintf("Nombre d'erreurs MersenneTwister: %s", length(errorsMersenneTwister))
-
-hist(pValuesRANDU)
-hist(pValuesStandardMinimal)
-hist(pValuesVonNeumann, xlim = c(0,1))
-hist(pValuesMersenneTwister)
+sprintf(
+  "Nombre d'erreurs MersenneTwister: %s",
+  length(below1Percent$MersenneTwister)
+)
 ```
-On rejette les algorithmes de RANDU et VonNeumann qui ne passent pas le test des 1%.
 
-## Question 5
+Comme lors du test de fréquence, l'algorithme de`Von Neumann` produit beaucoup
+de pValeurs en dessous du seuil des $1%$. 
 
-```{r}
-par(mfrow=c(1,2))
+## Test des runs
 
+### Question 5
+
+```{r, echo=FALSE}
+# Génére 100 seeds
 set.seed(198676)
 seeds <- sample.int(2^30, 100)
 
-pValuesRANDU <- c()
-pValuesStandardMinimal <- c()
-pValuesVonNeumann <- c()
-pValuesMersenneTwister <- c()
+numberOfValues <- 250
 
+pValues <- list (
+  RANDU = c(),
+  StandardMinimal = c(),
+  VonNeumann = c(),
+  MersenneTwister = c()
+)
 
-for (i in 1:length(seeds))
-{
-  pValuesRANDU <- append(pValuesRANDU , order.test(RANDU(4*54, seeds[i]), d=4, echo=FALSE)$p.value)
-  pValuesStandardMinimal <- append(pValuesStandardMinimal, order.test(StandardMinimal(4*54, seeds[i]), d=4, echo=FALSE)$p.value)
-  pValuesVonNeumann <- append(pValuesVonNeumann, order.test(VonNeumann(54, 4, seeds[i]), d=4, echo=FALSE)$p.value)
-  pValuesMersenneTwister <- append(pValuesMersenneTwister, order.test(MersenneTwister(54, 4, seeds[i]), d=4, echo=FALSE)$p.value)
+for (seed in seeds) {
+  
+  # RANDU
+  pValues$RANDU <- append(
+    pValues$RANDU, 
+    order.test(RANDU(4*54, seed), d=4, echo=FALSE)$p.value
+  )
+  
+  # Standard Minimal
+  pValues$StandardMinimal <- append(
+    pValues$StandardMinimal,
+    order.test(StandardMinimal(4*54, seed), d=4, echo=FALSE)$p.value
+  )
+  
+  # Von Neumann
+  pValues$VonNeumann <- append(
+    pValues$VonNeumann, 
+    order.test(VonNeumann(54, 4, seed), d=4, echo=FALSE)$p.value
+  )
+  
+  # Mersenne Twister
+  pValues$MersenneTwister <- append(
+    pValues$MersenneTwister, 
+    order.test(MersenneTwister(54, 4, seed), d=4, echo=FALSE)$p.value
+  )
 }
 
-errorsRANDU = c()
-for (x in 1:length(pValuesRANDU))
-{
-  if (pValuesRANDU[x] <= 0.01)
-  {
-    errorsRANDU <- append(errorsRANDU, pValuesRANDU[x])
-  }
-}
+# Calculs les valeurs en dessous de 1%
+below1Percent <- belowThreshold(pValues)
 
-errorsStandardMinimal = c()
-for (x in 1:length(pValuesStandardMinimal))
-{
-  if (pValuesStandardMinimal[x] <= 0.01)
-  {
-    errorsStandardMinimal <- append(errorsStandardMinimal, pValuesStandardMinimal[x])
-  }
-}
+# Affiche le nombre de valeurs générées en dessous de 1%
+sprintf(
+  "Nombre d'erreurs RANDU: %s", 
+  length(below1Percent$RANDU)
+)
 
-errorsVonNeumann = c()
-for (x in 1:length(pValuesVonNeumann))
-{
-  if (pValuesVonNeumann[x] <= 0.01)
-  {
-    errorsVonNeumann <- append(errorsVonNeumann, pValuesVonNeumann[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs StandardMinimal: %s",
+  length(below1Percent$StandardMinimal)
+)
 
-errorsMersenneTwister = c()
-for (x in 1:length(pValuesMersenneTwister))
-{
-  if (pValuesMersenneTwister[x] <= 0.01)
-  {
-    errorsMersenneTwister <- append(errorsMersenneTwister, pValuesMersenneTwister[x])
-  }
-}
+sprintf(
+  "Nombre d'erreurs VonNeumann: %s",
+  length(below1Percent$VonNeumann)
+)
 
-sprintf("Nombre d'erreurs RANDU: %s", length(errorsRANDU))
-sprintf("Nombre d'erreurs StandardMinimal: %s", length(errorsStandardMinimal))
-sprintf("Nombre d'erreurs VonNeumann: %s", length(errorsVonNeumann))
-sprintf("Nombre d'erreurs MersenneTwister: %s", length(errorsMersenneTwister))
+sprintf(
+  "Nombre d'erreurs MersenneTwister: %s",
+  length(below1Percent$MersenneTwister)
+)
 ```
-On rejette l'algorithme de VonNeumann qui ne passe pas le test des 1%.
 
-#### Conclusion de l'exercice
-À la suite des différents tests, nous pouvons conclure que les algorithmes de 
-RANDU et VonNeumann ne sont pas de bon générateurs aléatoires. Au contraire 
-les algorithmes de MersenneTwister et StandardMinimal semble être des 
-générateurs corrects.
+Comme lors du test de fréquence et des runs, l'algorithme de`Von Neumann` produit beaucoup
+de pValeurs en dessous du seuil des $1%$. 
+
+### Conclusion
+
+À la suite des différents tests, nous pouvons conclure que les
+algorithmes de `RANDU` et `Von Neumann` ne sont pas de bon générateurs
+aléatoires. Au contraire les algorithmes de `Mersenne Twister` et
+`StandardMinimal` semble être des générateurs corrects.
+
+# Application aux files d’attentes
+
+## Files M/M/1
 
 ### Question 7
-```{r}
+
+```{r, echo=FALSE}
+# Paramètre l'affichage
+par(mfrow=c(2,2))
+
 results <- FileMM1(10, 20, 12)
-evolutions <- systemEvolution(results)
-plot(evolutions$t, evolutions$nb, type = "l")
+evolutions <- systemEvolution(results$arrivees, results$departs)
+plot(
+  evolutions$time, 
+  evolutions$capacity, 
+  type = "l", 
+  xlab = "Temps", 
+  ylab = "Nombre de client"
+)
 
 results <- FileMM1(14, 20, 12)
-evolutions <- systemEvolution(results)
-plot(evolutions$t, evolutions$nb, type = "l")
+evolutions <- systemEvolution(results$arrivees, results$departs)
+plot(
+  evolutions$time, 
+  evolutions$capacity, 
+  type = "l", 
+  xlab = "Temps", 
+  ylab = "Nombre de client"
+)
 
 results <- FileMM1(20, 20, 12)
-evolutions <- systemEvolution(results)
-plot(evolutions$t, evolutions$nb, type = "l")
-
+evolutions <- systemEvolution(results$arrivees, results$departs)
+plot(
+  evolutions$time, 
+  evolutions$capacity, 
+  type = "l", 
+  xlab = "Temps", 
+  ylab = "Nombre de client"
+)
 
 results <- FileMM1(30, 20, 12)
-evolutions <- systemEvolution(results)
-plot(evolutions$t, evolutions$nb, type = "l")
-
+evolutions <- systemEvolution(results$arrivees, results$departs)
+plot(
+  evolutions$time, 
+  evolutions$capacity, 
+  type = "l", 
+  xlab = "Temps", 
+  ylab = "Nombre de client"
+)
 ```
 
-### Question 8 
-```{r}
-results <- FileMM1(10, 20, 12)
-print(mean(turnAroundTime(results$arrivees, results$departs)) * 10)
+### Question 8
 
-a <- 10 / 20
-print(a / (1 - a))
+```{r, echo=FALSE}
+lambda <- 10
+mu <- 20
+interval <- 12
 
-results <- FileMM1(14, 20, 12)
-print(mean(turnAroundTime(results$arrivees, results$departs)) * 14)
+results <- FileMM1(lambda, mu, interval)
+sprintf(
+  "Temps moyen durant de présence du client dans le système: %s",
+  mean(turnAroundTime(results$arrivees, results$departs)) * 10
+)
 
-a <- 14 / 20
-print(a / (1 - a))
+a <- lambda / mu
+sprintf("Idem via formule de Little: %s", a / (1 - a))
+
+lambda <- 14
+mu <- 20
+
+results <- FileMM1(lambda, mu, interval)
+sprintf(
+  "Temps moyen durant de présence du client dans le système: %s",
+  mean(turnAroundTime(results$arrivees, results$departs)) * 14
+)
+
+a <- lambda / mu
+sprintf("Idem via formule de Little: %s", a / (1 - a))
 ```
 
-Puisque l'intensité du traffic (alpha) des exemples avec lambda égaux à 20 et 30 est supérieur ou
-égal à 1, nous ignorons ces cas puisque la file d'attente s'allonge et fini par saturer. En ce qui
-concerne les cas où lambda est égal à 10 ou 14 on reconnait la formule de Little 
-($E(N) = \lambda * E(W)$) puisque l'on observe des résultats proche.
+Puisque l'intensité du trafic (alpha) des exemples avec lambda égal ont
+20 et 30 est supérieur ou égal à 1, nous ignorons ces cas puisque la
+file d'attente s'allonge continuellement et finit par saturer.
+En ce qui concerne les cas où lambda est égal à 10 ou 14 on observe que les 
+résultats s'approchent de ceux obtenus avec la formule de Little
+($E(N) = \lambda * E(W)$).

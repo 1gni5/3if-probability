@@ -37,6 +37,7 @@ binary <- function(x)
   }
 }
 
+
 # --- Question 1 ---
 RANDU <- function(k, seed)
 {
@@ -73,6 +74,3 @@ StandardMinimal <- function(k, seed)
   
   return(x)
 }
-
-
-

@@ -28,6 +28,7 @@ Frequency <- function(x, nb)
   return(pValue)
 }
 
+# --- Question 4 ---
 Runs <- function(x, nb)
 {
   nbBits <- 0
