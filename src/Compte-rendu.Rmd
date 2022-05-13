@@ -1,11 +1,14 @@
 ---
-title: "Modélisation et Outils Mathématiques, TP génération de nombres aléatoires et probabilités"
+title: Modélisation et Outils Mathématiques, TP génération de nombres aléatoires et
+  probabilités
 author: "Jules Ducange, Fécilie Chaudron et Erwan Soulier"
 date: "`r Sys.Date()`"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: 72
 ---
 
@@ -20,6 +23,10 @@ source('utils.R')
 # Tests de générateurs pseudo-aléatoires
 
 ## Test Visuel
+
+### Question 1 
+
+Les fonctions RANDU et StandarddMinimal ont été implémentées dans le fichier generateurs.R, elles seront testées dans la suite des questions.
 
 ### Question 2.1
 
@@ -92,7 +99,8 @@ plot(
   randu[1:(numberOfValues-1)], 
   randu[2:numberOfValues],
   xlab = "Valeur précédente",
-  ylab = "Valeur générée"
+  ylab = "Valeur générée",
+  main = "RANDU"
 )
 
 # Relation entre les valeurs générée par StandardMinimal
@@ -100,7 +108,8 @@ plot(
   standard[1:(numberOfValues-1)], 
   standard[2:numberOfValues],
   xlab = "Valeur précédente",
-  ylab = "Valeur générée"
+  ylab = "Valeur générée",
+  main = "Standard Minimal"
 )
 
 # Relation entre les valeurs générée par VonNeumann
@@ -108,7 +117,8 @@ plot(
   neumann[1:(numberOfValues-1)],
   neumann[2:numberOfValues],
   xlab = "Valeur précédente",
-  ylab = "Valeur générée"
+  ylab = "Valeur générée",
+  main = "Von Neumann"
 )
 
 # Relation entre les valeurs générée par MersenneTwister
@@ -116,7 +126,8 @@ plot(
   twister[1:(numberOfValues-1)],
   twister[2:numberOfValues],
   xlab = "Valeur précédente",
-  ylab = "Valeur générée"
+  ylab = "Valeur générée",
+  main = "Mersenne Twister"
 )
 ```
 
@@ -204,6 +215,10 @@ On remarque que les algorithmes de `RANDU` et `Von Neumann` produisent beaucoup
 de pValeurs en dessous du seuil des $1%$, on peut donc les rejeter, ils ne sont pas des
 générateurs aléatoires de qualité.
 
+## Test des runs
+
+### Question 4
+
 ```{r, echo=FALSE}
 # Génére 100 seeds
 set.seed(198676)
@@ -274,12 +289,12 @@ sprintf(
 Comme lors du test de fréquence, l'algorithme de`Von Neumann` produit beaucoup
 de pValeurs en dessous du seuil des $1%$. 
 
-## Test des runs
+## Test d'ordre
 
 ### Question 5
 
 ```{r, echo=FALSE}
-# Génére 100 seeds
+# Génère 100 seeds
 set.seed(198676)
 seeds <- sample.int(2^30, 100)
 
@@ -358,7 +373,7 @@ aléatoires. Au contraire les algorithmes de `Mersenne Twister` et
 
 ## Files M/M/1
 
-### Question 7
+### Question 6 & 7
 
 ```{r, echo=FALSE}
 # Paramètre l'affichage
@@ -371,7 +386,8 @@ plot(
   evolutions$capacity, 
   type = "l", 
   xlab = "Temps", 
-  ylab = "Nombre de client"
+  ylab = "Nombre de client",
+  main = "Lamba = 10"
 )
 
 results <- FileMM1(14, 20, 12)
@@ -381,7 +397,8 @@ plot(
   evolutions$capacity, 
   type = "l", 
   xlab = "Temps", 
-  ylab = "Nombre de client"
+  ylab = "Nombre de client",
+  main = "Lambda = 14"
 )
 
 results <- FileMM1(20, 20, 12)
@@ -391,7 +408,8 @@ plot(
   evolutions$capacity, 
   type = "l", 
   xlab = "Temps", 
-  ylab = "Nombre de client"
+  ylab = "Nombre de client",
+  main = "Lambda = 20"
 )
 
 results <- FileMM1(30, 20, 12)
@@ -401,9 +419,19 @@ plot(
   evolutions$capacity, 
   type = "l", 
   xlab = "Temps", 
-  ylab = "Nombre de client"
+  ylab = "Nombre de client",
+  main = "Lambda = 30"
 )
 ```
+
+
+On remarque sur les deux premiers exemples (Lamba égal à 10 et 14) que la
+file d'attente finis toujours par revenir à un état stable, soit le serveur
+arrive à contenir l'affluance de clients. Or dans les deux autres exemples,
+la file finis par saturer puisque le nombre de clients entrant est supérieur
+ou égal au nombre de clients qui sont servi et partent, donc le serveur 
+n'arrive pas à contenir l'affluance de clients.
+
 
 ### Question 8
 
@@ -438,5 +466,9 @@ Puisque l'intensité du trafic (alpha) des exemples avec lambda égal ont
 20 et 30 est supérieur ou égal à 1, nous ignorons ces cas puisque la
 file d'attente s'allonge continuellement et finit par saturer.
 En ce qui concerne les cas où lambda est égal à 10 ou 14 on observe que les 
-résultats s'approchent de ceux obtenus avec la formule de Little
+résultats s'approchent un peu de ceux obtenus avec la formule de Little
 ($E(N) = \lambda * E(W)$).
+
+
+
+
