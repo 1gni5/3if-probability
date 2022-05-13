@@ -77,6 +77,5 @@ Runs <- function(x, nb)
   }
   
   pValue <- 2 * (1 - pnorm(abs(Vn - 2 * nbBits * pi * (1 - pi)) / (2 * sqrt(nbBits) * pi * (1 - pi))))
-  #return(c(pValue, pi, Vn))
   return(pValue)
 }
